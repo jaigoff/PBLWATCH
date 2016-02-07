@@ -8,7 +8,9 @@ static Layer *s_canvas_layer_battery;
 static int16_t ibatterysize;
 
 const int16_t C_REC_BATTERY=17;
-  
+
+
+//Draw the battery status
 static void drawbattery(Layer *layer, GContext *ctx ){
   graphics_draw_rect(ctx, GRect(0,0,20,10) );
   graphics_context_set_fill_color(ctx, GColorGreen);
@@ -16,6 +18,7 @@ static void drawbattery(Layer *layer, GContext *ctx ){
   graphics_fill_rect(ctx, GRect(2,2,ibatterysize,7), 1, GCornerNone);
 }
 
+//Battery handler when the battery status change
 static void battery_handler(BatteryChargeState new_state) {
   APP_LOG(APP_LOG_LEVEL_DEBUG,"Battery %d%%",new_state.charge_percent);
   ibatterysize=(new_state.charge_percent*C_REC_BATTERY)/100;
@@ -23,7 +26,7 @@ static void battery_handler(BatteryChargeState new_state) {
 }
 
 
-
+//Update Hour Label
 static void updateHour(struct tm *tick_time){
     static char s_hourbuffer[8];
     strftime(s_hourbuffer, sizeof(s_hourbuffer), clock_is_24h_style() ?
@@ -32,6 +35,7 @@ static void updateHour(struct tm *tick_time){
      text_layer_set_text(s_textlayer_hour,s_hourbuffer);   
 }
 
+//Update Minute Label
 static void updateMin(struct tm *tick_time){
     static char s_minbuffer[8];
     strftime(s_minbuffer, sizeof(s_minbuffer),"%M" , tick_time);
@@ -39,15 +43,16 @@ static void updateMin(struct tm *tick_time){
     
 }
 
+//Tick handler when time changes
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   // Get a tm structure
   time_t temp = time(NULL);
   struct tm *tm_tick_time = localtime(&temp);
 
-    APP_LOG(APP_LOG_LEVEL_DEBUG,"Second %d",SECOND_UNIT);
+    /*APP_LOG(APP_LOG_LEVEL_DEBUG,"Second %d",SECOND_UNIT);
     APP_LOG(APP_LOG_LEVEL_DEBUG,"Minute %d",MINUTE_UNIT);
     APP_LOG(APP_LOG_LEVEL_DEBUG,"Hour %d",HOUR_UNIT);
-    APP_LOG(APP_LOG_LEVEL_DEBUG,"TimeUnit %d",units_changed);
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"TimeUnit %d",units_changed);*/
   
   if(units_changed&MINUTE_UNIT)
   {
@@ -63,10 +68,10 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
     updateMin(tm_tick_time);
     updateHour(tm_tick_time);
   }
-  APP_LOG(APP_LOG_LEVEL_DEBUG,"TimeUnit END %d",units_changed);
+  //APP_LOG(APP_LOG_LEVEL_DEBUG,"TimeUnit END %d",units_changed);
 }
 
-
+//Load the window 
 static void main_window_load(Window *window) {
    
   // Get information about the Window
@@ -92,6 +97,7 @@ static void main_window_load(Window *window) {
   text_layer_set_font(s_textlayer_min, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
   text_layer_set_text_alignment(s_textlayer_min, GTextAlignmentLeft);
   
+  
   //add text to the window
   
   layer_add_child(window_layer, text_layer_get_layer(s_textlayer_hour));
@@ -106,6 +112,7 @@ static void main_window_load(Window *window) {
   layer_set_update_proc(s_canvas_layer_battery, drawbattery);
 }
 
+//Unload window and so destroy everythings added in
 static void main_window_unload(Window *window) {
   //destroy time
   text_layer_destroy(s_textlayer_hour);
@@ -115,7 +122,7 @@ static void main_window_unload(Window *window) {
   layer_destroy(s_canvas_layer_battery);
 }
 
-
+//init for the program, creat window and get watch event
 static void init(){
   s_window=window_create();
   
@@ -137,11 +144,12 @@ static void init(){
  ibatterysize=C_REC_BATTERY;
 }
 
+//End watch face
 static void deinit(){
   window_destroy(s_window);
 }
 
-
+//main program for the watch
 int main(void) {
   init();
   app_event_loop();
