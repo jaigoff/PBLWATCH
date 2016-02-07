@@ -6,6 +6,7 @@ static TextLayer *s_textlayer_hour;
 static TextLayer *s_textlayer_min;
 static Layer *s_canvas_layer_battery;
 static int16_t ibatterysize;
+static uint8_t ubatterycharge;
 
 const int16_t C_REC_BATTERY=17;
 
@@ -13,17 +14,35 @@ const int16_t C_REC_BATTERY=17;
 //Draw the battery status
 static void drawbattery(Layer *layer, GContext *ctx ){
   graphics_draw_rect(ctx, GRect(0,0,20,10) );
-  graphics_context_set_fill_color(ctx, GColorGreen);
-  //graphics_draw_rect(ctx,GRect(2,2,17,7));
+  GColor batteryColor= GColorGreen;
+  //Select color for battery
+  if(ubatterycharge>=20&& ubatterycharge<41)
+  {
+    batteryColor= GColorOrange;
+  }
+  else if(ubatterycharge<20)
+  {
+    batteryColor= GColorRed;
+  }
+  graphics_context_set_fill_color(ctx, batteryColor);
+ 
   graphics_fill_rect(ctx, GRect(2,2,ibatterysize,7), 1, GCornerNone);
 }
+
+//Calculate rectangle width for the battery
+static void calculateBatterySize(uint8_t charge){
+  ibatterysize=(charge*C_REC_BATTERY)/100;
+  ubatterycharge=charge;
+}
+
 
 //Battery handler when the battery status change
 static void battery_handler(BatteryChargeState new_state) {
   APP_LOG(APP_LOG_LEVEL_DEBUG,"Battery %d%%",new_state.charge_percent);
-  ibatterysize=(new_state.charge_percent*C_REC_BATTERY)/100;
+  calculateBatterySize(new_state.charge_percent);
   layer_mark_dirty(s_canvas_layer_battery);
 }
+
 
 
 //Update Hour Label
@@ -140,8 +159,8 @@ static void init(){
   
   // Subscribe to the Battery State Service
   battery_state_service_subscribe(battery_handler);
-
- ibatterysize=C_REC_BATTERY;
+  BatteryChargeState bcs=battery_state_service_peek();
+  calculateBatterySize(bcs.charge_percent);
 }
 
 //End watch face
