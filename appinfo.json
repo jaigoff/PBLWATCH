@@ -1,0 +1,25 @@
+{
+    "appKeys": {},
+    "capabilities": [
+        "health"
+    ],
+    "companyName": "legoff_jeremy@yahoo.fr",
+    "enableMultiJS": true,
+    "longName": "JaigCWtach",
+    "projectType": "native",
+    "resources": {
+        "media": []
+    },
+    "sdkVersion": "3",
+    "shortName": "JaigCWtach",
+    "targetPlatforms": [
+        "aplite",
+        "basalt",
+        "chalk"
+    ],
+    "uuid": "379d24ed-2e60-4447-a84a-d748f6206c52",
+    "versionLabel": "1.0",
+    "watchapp": {
+        "watchface": false
+    }
+}
