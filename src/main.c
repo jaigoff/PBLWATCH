@@ -7,7 +7,10 @@ static TextLayer *s_textlayer_min;
 static Layer *s_canvas_layer_battery;
 static int16_t ibatterysize;
 static uint8_t ubatterycharge;
-
+GColor C_COLOR_TEXT_HOUR;
+GColor C_COLOR_TEXT_MIN;
+GColor C_COLOR_BACKGROUNG_HOUR;
+GColor C_COLOR_BACKGROUNG_MIN;
 const int16_t C_REC_BATTERY=17;
 
 
@@ -100,8 +103,8 @@ static void main_window_load(Window *window) {
   //create TextLayer
   s_textlayer_hour=text_layer_create(GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),0 , 65 , bounds.size.h/3 ));
   
-  text_layer_set_background_color(s_textlayer_hour, GColorRed);
-  text_layer_set_text_color(s_textlayer_hour, GColorBlack);
+  text_layer_set_background_color(s_textlayer_hour, C_COLOR_BACKGROUNG_HOUR);
+  text_layer_set_text_color(s_textlayer_hour, C_COLOR_TEXT_HOUR);
   text_layer_set_text(s_textlayer_hour, "HH");
   text_layer_set_font(s_textlayer_hour, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
   text_layer_set_text_alignment(s_textlayer_hour, GTextAlignmentLeft);
@@ -110,8 +113,8 @@ static void main_window_load(Window *window) {
   
   s_textlayer_min=text_layer_create(GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),bounds.size.h/3 , 65 , bounds.size.h/3 ));
   
-  text_layer_set_background_color(s_textlayer_min, GColorYellow);
-  text_layer_set_text_color(s_textlayer_min, GColorBlack);
+  text_layer_set_background_color(s_textlayer_min, C_COLOR_BACKGROUNG_MIN);
+  text_layer_set_text_color(s_textlayer_min, C_COLOR_TEXT_MIN);
   text_layer_set_text(s_textlayer_min, "00");
   text_layer_set_font(s_textlayer_min, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
   text_layer_set_text_alignment(s_textlayer_min, GTextAlignmentLeft);
@@ -143,6 +146,12 @@ static void main_window_unload(Window *window) {
 
 //init for the program, creat window and get watch event
 static void init(){
+    //init color
+  C_COLOR_TEXT_HOUR=GColorWhite;
+  C_COLOR_TEXT_MIN=GColorWhite;
+  C_COLOR_BACKGROUNG_HOUR=GColorDarkGray;
+  C_COLOR_BACKGROUNG_MIN=GColorDarkGray;
+
   s_window=window_create();
   
   // Set handlers to manage the elements inside the Window
@@ -161,6 +170,8 @@ static void init(){
   battery_state_service_subscribe(battery_handler);
   BatteryChargeState bcs=battery_state_service_peek();
   calculateBatterySize(bcs.charge_percent);
+  
+
 }
 
 //End watch face
