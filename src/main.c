@@ -16,7 +16,8 @@ const int16_t C_REC_BATTERY=17;
 
 //Draw the battery status
 static void drawbattery(Layer *layer, GContext *ctx ){
-  graphics_draw_rect(ctx, GRect(0,0,20,10) );
+  GRect bounds = layer_get_bounds(layer);
+  graphics_draw_rect(ctx, GRect(bounds.size.w-20,0,20,10) );
   GColor batteryColor= GColorGreen;
   //Select color for battery
   if(ubatterycharge>=20&& ubatterycharge<41)
@@ -29,7 +30,7 @@ static void drawbattery(Layer *layer, GContext *ctx ){
   }
   graphics_context_set_fill_color(ctx, batteryColor);
  
-  graphics_fill_rect(ctx, GRect(2,2,ibatterysize,7), 1, GCornerNone);
+  graphics_fill_rect(ctx, GRect(bounds.size.w-18,2,ibatterysize,7), 1, GCornerNone);
 }
 
 //Calculate rectangle width for the battery
