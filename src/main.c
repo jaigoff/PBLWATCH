@@ -8,6 +8,7 @@ static TextLayer *s_textlayer_month;
 static TextLayer *s_textlayer_daynumber;
 static TextLayer *s_textlayer_dayletter;
 static Layer *s_canvas_layer_battery;
+static Layer *s_canvas_layer_calendar;
 static int16_t ibatterysize;
 static uint8_t ubatterycharge;
 GColor C_COLOR_TEXT_HOUR;
@@ -16,7 +17,12 @@ GColor C_COLOR_BACKGROUNG_HOUR;
 GColor C_COLOR_BACKGROUNG_MIN;
 const int16_t C_REC_BATTERY=17;
 
-
+//Draw calendar
+static void drawcalendarstroke (Layer *layer, GContext *ctx ){
+  graphics_context_set_stroke_color(ctx,GColorBlack);
+  graphics_draw_line(ctx,GPoint(79,99+18),GPoint(79,168));
+  graphics_draw_line(ctx,GPoint(143,99+18),GPoint(143,168));
+}
 //Draw the battery status
 static void drawbattery(Layer *layer, GContext *ctx ){
   GRect bounds = layer_get_bounds(layer);
@@ -183,7 +189,7 @@ static void main_window_load(Window *window) {
   layer_add_child(window_layer, text_layer_get_layer(s_textlayer_hour));
  
   layer_add_child(window_layer, text_layer_get_layer(s_textlayer_month));
-   layer_add_child(window_layer, text_layer_get_layer(s_textlayer_daynumber));
+  layer_add_child(window_layer, text_layer_get_layer(s_textlayer_daynumber));
   layer_add_child(window_layer, text_layer_get_layer(s_textlayer_dayletter));
  
   
@@ -191,8 +197,11 @@ static void main_window_load(Window *window) {
   s_canvas_layer_battery = layer_create(GRect(0, 0, bounds.size.w, bounds.size.h));
   layer_add_child(window_layer, s_canvas_layer_battery);
 
+  s_canvas_layer_calendar = layer_create(GRect(0, 0, bounds.size.w, bounds.size.h));
+  layer_add_child(window_layer, s_canvas_layer_calendar);
   // Set the update_proc
   layer_set_update_proc(s_canvas_layer_battery, drawbattery);
+  layer_set_update_proc(s_canvas_layer_calendar,drawcalendarstroke);
 }
 
 //Unload window and so destroy everythings added in
@@ -205,6 +214,7 @@ static void main_window_unload(Window *window) {
   text_layer_destroy(s_textlayer_daynumber);
     // Destroy Layer
   layer_destroy(s_canvas_layer_battery);
+  layer_destroy(s_canvas_layer_calendar);
 }
 
 //init for the program, creat window and get watch event

@@ -3,12 +3,29 @@
     "capabilities": [
         "health"
     ],
-    "companyName": "legoff_jeremy@yahoo.fr",
+    "companyName": "Jaigoff",
     "enableMultiJS": true,
     "longName": "JaigCWtach",
     "projectType": "native",
     "resources": {
-        "media": []
+        "media": [
+            {
+                "file": "images/Screenshot",
+                "name": "SCREENSHOT1",
+                "targetPlatforms": [
+                    "basalt"
+                ],
+                "type": "bitmap"
+            },
+            {
+                "file": "images/Screenshot",
+                "name": "Screenshot1",
+                "targetPlatforms": [
+                    "basalt"
+                ],
+                "type": "bitmap"
+            }
+        ]
     },
     "sdkVersion": "3",
     "shortName": "JaigCWtach",
