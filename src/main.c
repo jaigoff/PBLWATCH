@@ -5,6 +5,8 @@ static Window *s_window;
 static TextLayer *s_textlayer_hour;
 static TextLayer *s_textlayer_min;
 static TextLayer *s_textlayer_month;
+static TextLayer *s_textlayer_daynumber;
+static TextLayer *s_textlayer_dayletter;
 static Layer *s_canvas_layer_battery;
 static int16_t ibatterysize;
 static uint8_t ubatterycharge;
@@ -56,9 +58,20 @@ static void battery_handler(BatteryChargeState new_state) {
 
 //Update Month Label
 static void updateMonth(struct tm *tick_time){
-    static char s_monthbuffer[18];
+    static char s_monthbuffer[36];
     strftime(s_monthbuffer, sizeof(s_monthbuffer),"%B" , tick_time);
     text_layer_set_text(s_textlayer_month, s_monthbuffer); 
+}
+
+//Update Day Label and Number
+static void updateDay(struct tm *tick_time){
+    static char s_daynumberbuffer[8];
+    strftime(s_daynumberbuffer, sizeof(s_daynumberbuffer),"%e" , tick_time);
+    text_layer_set_text(s_textlayer_daynumber, s_daynumberbuffer); 
+  
+    static char s_dayletterbuffer[36];
+    strftime(s_dayletterbuffer, sizeof(s_dayletterbuffer),"%A" , tick_time);
+    text_layer_set_text(s_textlayer_dayletter, s_dayletterbuffer); 
 }
 
 //Update Hour Label
@@ -92,7 +105,7 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   if(units_changed&MINUTE_UNIT)
   {
     updateMin(tm_tick_time);
-    APP_LOG(APP_LOG_LEVEL_DEBUG,"Minute Changed %d",units_changed);
+    //APP_LOG(APP_LOG_LEVEL_DEBUG,"Minute Changed %d",units_changed);
   }
   if(units_changed&HOUR_UNIT)
   {
@@ -101,11 +114,15 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   if(units_changed&MONTH_UNIT){
     updateMonth(tm_tick_time);
   }
+  if(units_changed&DAY_UNIT){
+    updateDay(tm_tick_time);
+  }
   if(units_changed==0)//first load
   {
     updateMin(tm_tick_time);
     updateHour(tm_tick_time);
     updateMonth(tm_tick_time);
+    updateDay(tm_tick_time);
   }
   //APP_LOG(APP_LOG_LEVEL_DEBUG,"TimeUnit END %d",units_changed);
 }
@@ -143,11 +160,28 @@ static void main_window_load(Window *window) {
   text_layer_set_text(s_textlayer_month, "MM");
   text_layer_set_font(s_textlayer_month, fonts_get_system_font(FONT_KEY_GOTHIC_14));
   text_layer_set_text_alignment(s_textlayer_month, GTextAlignmentCenter);
+  
+  s_textlayer_dayletter=text_layer_create(GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),(bounds.size.h/3)*2+bounds.size.h/9, 65 , bounds.size.h/9 ));
+  text_layer_set_background_color(s_textlayer_dayletter, GColorWhite);
+  text_layer_set_text_color(s_textlayer_dayletter, GColorBlack);
+  text_layer_set_text(s_textlayer_dayletter, "Wednesday");
+  text_layer_set_font(s_textlayer_dayletter, fonts_get_system_font(FONT_KEY_GOTHIC_14));
+  text_layer_set_text_alignment(s_textlayer_dayletter, GTextAlignmentCenter);
+  
+  s_textlayer_daynumber=text_layer_create(GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),(bounds.size.h/3)*2+(bounds.size.h/9)*2, 65 , bounds.size.h/9 ));
+  text_layer_set_background_color(s_textlayer_daynumber, GColorWhite);
+  text_layer_set_text_color(s_textlayer_daynumber, GColorBlack);
+  text_layer_set_text(s_textlayer_daynumber, "31");
+  text_layer_set_font(s_textlayer_daynumber, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+  text_layer_set_text_alignment(s_textlayer_daynumber, GTextAlignmentCenter);
+  
   //add text to the window
   
   layer_add_child(window_layer, text_layer_get_layer(s_textlayer_hour));
   layer_add_child(window_layer, text_layer_get_layer(s_textlayer_min));
   layer_add_child(window_layer, text_layer_get_layer(s_textlayer_month));
+  layer_add_child(window_layer, text_layer_get_layer(s_textlayer_dayletter));
+  layer_add_child(window_layer, text_layer_get_layer(s_textlayer_daynumber));
   
   // Create Layer
   s_canvas_layer_battery = layer_create(GRect(0, 0, bounds.size.w, bounds.size.h));
@@ -163,6 +197,8 @@ static void main_window_unload(Window *window) {
   text_layer_destroy(s_textlayer_hour);
   text_layer_destroy(s_textlayer_min);
   text_layer_destroy(s_textlayer_month);
+  text_layer_destroy(s_textlayer_dayletter);
+  text_layer_destroy(s_textlayer_daynumber);
     // Destroy Layer
   layer_destroy(s_canvas_layer_battery);
 }
