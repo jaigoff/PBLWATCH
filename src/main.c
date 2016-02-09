@@ -20,6 +20,9 @@ const int16_t C_REC_BATTERY=17;
 //Draw the battery status
 static void drawbattery(Layer *layer, GContext *ctx ){
   GRect bounds = layer_get_bounds(layer);
+  //background
+    graphics_context_set_fill_color(ctx,C_COLOR_BACKGROUNG_HOUR);
+  graphics_fill_rect(ctx, GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),0,65,10),0,GCornerNone );
   //stroke battery
   graphics_context_set_stroke_color(ctx,C_COLOR_TEXT_HOUR);
   graphics_draw_rect(ctx, GRect(bounds.size.w-24,0,20,10) );
@@ -133,55 +136,56 @@ static void main_window_load(Window *window) {
   // Get information about the Window
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
-  
+  APP_LOG(APP_LOG_LEVEL_INFO,"w %d h%d", bounds.size.w, bounds.size.h);
   //create TextLayer
-  s_textlayer_hour=text_layer_create(GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),0 , 65 , bounds.size.h/3 ));
+  s_textlayer_hour=text_layer_create(GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),5, 65 ,50 ));
   
   text_layer_set_background_color(s_textlayer_hour, C_COLOR_BACKGROUNG_HOUR);
   text_layer_set_text_color(s_textlayer_hour, C_COLOR_TEXT_HOUR);
   text_layer_set_text(s_textlayer_hour, "HH");
-  text_layer_set_font(s_textlayer_hour, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
-  text_layer_set_text_alignment(s_textlayer_hour, GTextAlignmentRight);
+  text_layer_set_font(s_textlayer_hour, fonts_get_system_font(FONT_KEY_ROBOTO_BOLD_SUBSET_49));
+  text_layer_set_text_alignment(s_textlayer_hour, GTextAlignmentCenter);
   
   
   
-  s_textlayer_min=text_layer_create(GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),bounds.size.h/3 , 65 , bounds.size.h/3 ));
+  s_textlayer_min=text_layer_create(GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),45, 65 , 54 ));
   
   text_layer_set_background_color(s_textlayer_min, C_COLOR_BACKGROUNG_MIN);
   text_layer_set_text_color(s_textlayer_min, C_COLOR_TEXT_MIN);
   text_layer_set_text(s_textlayer_min, "00");
-  text_layer_set_font(s_textlayer_min, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
-  text_layer_set_text_alignment(s_textlayer_min, GTextAlignmentRight);
+  text_layer_set_font(s_textlayer_min, fonts_get_system_font(FONT_KEY_ROBOTO_BOLD_SUBSET_49));
+  text_layer_set_text_alignment(s_textlayer_min, GTextAlignmentCenter);
   
   
-  s_textlayer_month=text_layer_create(GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),(bounds.size.h/3)*2 , 65 , bounds.size.h/9 ));
+  s_textlayer_month=text_layer_create(GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),99, 65 , 18 ));
   text_layer_set_background_color(s_textlayer_month, GColorRed);
   text_layer_set_text_color(s_textlayer_month, GColorWhite);
   text_layer_set_text(s_textlayer_month, "MM");
-  text_layer_set_font(s_textlayer_month, fonts_get_system_font(FONT_KEY_GOTHIC_14));
+  text_layer_set_font(s_textlayer_month, fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD));
   text_layer_set_text_alignment(s_textlayer_month, GTextAlignmentCenter);
   
-  s_textlayer_dayletter=text_layer_create(GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),(bounds.size.h/3)*2+bounds.size.h/9, 65 , bounds.size.h/9 ));
+  s_textlayer_dayletter=text_layer_create(GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),99+18, 65 ,18 ));
   text_layer_set_background_color(s_textlayer_dayletter, GColorWhite);
   text_layer_set_text_color(s_textlayer_dayletter, GColorBlack);
   text_layer_set_text(s_textlayer_dayletter, "Wednesday");
   text_layer_set_font(s_textlayer_dayletter, fonts_get_system_font(FONT_KEY_GOTHIC_14));
   text_layer_set_text_alignment(s_textlayer_dayletter, GTextAlignmentCenter);
   
-  s_textlayer_daynumber=text_layer_create(GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),(bounds.size.h/3)*2+(bounds.size.h/9)*2, 65 , bounds.size.h/9 ));
+  s_textlayer_daynumber=text_layer_create(GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),99+18+18-5, 65 , 35 ));
   text_layer_set_background_color(s_textlayer_daynumber, GColorWhite);
   text_layer_set_text_color(s_textlayer_daynumber, GColorBlack);
   text_layer_set_text(s_textlayer_daynumber, "31");
-  text_layer_set_font(s_textlayer_daynumber, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+  text_layer_set_font(s_textlayer_daynumber, fonts_get_system_font(FONT_KEY_BITHAM_30_BLACK));
   text_layer_set_text_alignment(s_textlayer_daynumber, GTextAlignmentCenter);
   
   //add text to the window
-  
-  layer_add_child(window_layer, text_layer_get_layer(s_textlayer_hour));
   layer_add_child(window_layer, text_layer_get_layer(s_textlayer_min));
+  layer_add_child(window_layer, text_layer_get_layer(s_textlayer_hour));
+ 
   layer_add_child(window_layer, text_layer_get_layer(s_textlayer_month));
+   layer_add_child(window_layer, text_layer_get_layer(s_textlayer_daynumber));
   layer_add_child(window_layer, text_layer_get_layer(s_textlayer_dayletter));
-  layer_add_child(window_layer, text_layer_get_layer(s_textlayer_daynumber));
+ 
   
   // Create Layer
   s_canvas_layer_battery = layer_create(GRect(0, 0, bounds.size.w, bounds.size.h));
