@@ -9,6 +9,11 @@ static TextLayer *s_textlayer_daynumber;
 static TextLayer *s_textlayer_dayletter;
 static Layer *s_canvas_layer_battery;
 static Layer *s_canvas_layer_calendar;
+
+static BitmapLayer *s_bitmap_layer_bluetooth;
+static GBitmap *s_bitmap_bluetooth_ok;
+static GBitmap *s_bitmap_bluetooth_ko;
+
 static int16_t ibatterysize;
 static uint8_t ubatterycharge;
 GColor C_COLOR_TEXT_HOUR;
@@ -17,6 +22,18 @@ GColor C_COLOR_BACKGROUNG_HOUR;
 GColor C_COLOR_BACKGROUNG_MIN;
 const int16_t C_REC_BATTERY=17;
 
+//Bluetooth
+static void bt_handler(bool isConnected){
+  if(isConnected)
+  {
+     bitmap_layer_set_bitmap(s_bitmap_layer_bluetooth, s_bitmap_bluetooth_ok);  
+     APP_LOG(APP_LOG_LEVEL_INFO,"Bluetooth connected");
+  }
+  else{
+    bitmap_layer_set_bitmap(s_bitmap_layer_bluetooth, s_bitmap_bluetooth_ko); 
+    APP_LOG(APP_LOG_LEVEL_INFO,"Bluetooth disconnected");
+  }
+}
 //Draw calendar
 static void drawcalendarstroke (Layer *layer, GContext *ctx ){
   graphics_context_set_stroke_color(ctx,GColorBlack);
@@ -193,12 +210,22 @@ static void main_window_load(Window *window) {
   layer_add_child(window_layer, text_layer_get_layer(s_textlayer_dayletter));
  
   
-  // Create Layer
+  // Create draw Layer
   s_canvas_layer_battery = layer_create(GRect(0, 0, bounds.size.w, bounds.size.h));
   layer_add_child(window_layer, s_canvas_layer_battery);
 
   s_canvas_layer_calendar = layer_create(GRect(0, 0, bounds.size.w, bounds.size.h));
   layer_add_child(window_layer, s_canvas_layer_calendar);
+  
+  //Create bitmap layer
+  s_bitmap_bluetooth_ok = gbitmap_create_with_resource(RESOURCE_ID_BT_OK);
+  s_bitmap_bluetooth_ko = gbitmap_create_with_resource(RESOURCE_ID_BT_KO);
+  s_bitmap_layer_bluetooth = bitmap_layer_create(GRect(75, 0, 20, 20));
+  bitmap_layer_set_compositing_mode(s_bitmap_layer_bluetooth, GCompOpSet);
+  
+  layer_add_child(window_layer, bitmap_layer_get_layer(s_bitmap_layer_bluetooth));
+   // Show current connection state
+  bt_handler(connection_service_peek_pebble_app_connection());
   // Set the update_proc
   layer_set_update_proc(s_canvas_layer_battery, drawbattery);
   layer_set_update_proc(s_canvas_layer_calendar,drawcalendarstroke);
@@ -215,6 +242,10 @@ static void main_window_unload(Window *window) {
     // Destroy Layer
   layer_destroy(s_canvas_layer_battery);
   layer_destroy(s_canvas_layer_calendar);
+  
+   bitmap_layer_destroy(s_bitmap_layer_bluetooth);
+   gbitmap_destroy(s_bitmap_bluetooth_ok);
+   gbitmap_destroy(s_bitmap_bluetooth_ko);
 }
 
 //init for the program, creat window and get watch event
@@ -246,7 +277,11 @@ static void init(){
   BatteryChargeState bcs=battery_state_service_peek();
   calculateBatterySize(bcs.charge_percent);
   
-
+  //Register
+  // Subscribe to Bluetooth updates
+  connection_service_subscribe((ConnectionHandlers) {
+    .pebble_app_connection_handler = bt_handler
+  });
 }
 
 //End watch face
