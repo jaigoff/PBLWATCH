@@ -48,7 +48,7 @@ static void drawbattery(Layer *layer, GContext *ctx ){
   graphics_fill_rect(ctx, GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),0,65,10),0,GCornerNone );
   //stroke battery
   graphics_context_set_stroke_color(ctx,C_COLOR_TEXT_HOUR);
-  graphics_draw_rect(ctx, GRect(bounds.size.w-24,0,20,10) );
+  graphics_draw_rect(ctx, GRect(bounds.size.w-24,2,20,10) );
   
   GColor batteryColor= GColorGreen;
   //Select color for battery
@@ -62,10 +62,10 @@ static void drawbattery(Layer *layer, GContext *ctx ){
   }
   graphics_context_set_fill_color(ctx, batteryColor);
  
-  graphics_fill_rect(ctx, GRect(bounds.size.w-23,2,ibatterysize,6), 1, GCornerNone);
+  graphics_fill_rect(ctx, GRect(bounds.size.w-23,4,ibatterysize,6), 1, GCornerNone);
   //add min rect at right
   graphics_context_set_fill_color(ctx, C_COLOR_TEXT_HOUR);
-  graphics_fill_rect(ctx, GRect(bounds.size.w-4,3,3,3),3, GCornersRight);
+  graphics_fill_rect(ctx, GRect(bounds.size.w-4,5,3,3),3, GCornersRight);
 }
 
 //Calculate rectangle width for the battery
