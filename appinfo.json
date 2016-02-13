@@ -10,6 +10,16 @@
     "resources": {
         "media": [
             {
+                "file": "images/Charging",
+                "name": "IMG_CHARGING",
+                "targetPlatforms": [
+                    "aplite",
+                    "basalt",
+                    "chalk"
+                ],
+                "type": "bitmap"
+            },
+            {
                 "file": "images/BluetoothKO",
                 "name": "BT_KO",
                 "targetPlatforms": [

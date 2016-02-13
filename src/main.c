@@ -11,8 +11,10 @@ static Layer *s_canvas_layer_battery;
 static Layer *s_canvas_layer_calendar;
 
 static BitmapLayer *s_bitmap_layer_bluetooth;
+static BitmapLayer *s_bitmap_layer_charging;
 static GBitmap *s_bitmap_bluetooth_ok;
 static GBitmap *s_bitmap_bluetooth_ko;
+static GBitmap *s_bitmap_charging;
 
 static int16_t ibatterysize;
 static uint8_t ubatterycharge;
@@ -66,6 +68,8 @@ static void drawbattery(Layer *layer, GContext *ctx ){
   //add min rect at right
   graphics_context_set_fill_color(ctx, C_COLOR_TEXT_HOUR);
   graphics_fill_rect(ctx, GRect(bounds.size.w-4,5,3,3),3, GCornersRight);
+  
+  
 }
 
 //Calculate rectangle width for the battery
@@ -74,12 +78,26 @@ static void calculateBatterySize(uint8_t charge){
   ubatterycharge=charge;
 }
 
+//show charging
+static void showCharging(bool ischarging){
+  Layer *rlayer=  bitmap_layer_get_layer(s_bitmap_layer_charging);
+  if(ischarging)
+  {
+     layer_set_hidden(rlayer,0);
+  }
+  else
+  {
+    layer_set_hidden(rlayer,1);
+  }
+}
 
 //Battery handler when the battery status change
 static void battery_handler(BatteryChargeState new_state) {
   APP_LOG(APP_LOG_LEVEL_DEBUG,"Battery %d%%",new_state.charge_percent);
   calculateBatterySize(new_state.charge_percent);
   layer_mark_dirty(s_canvas_layer_battery);
+  //battery charging
+  showCharging(new_state.is_charging);
 }
 
 //Update Month Label
@@ -220,12 +238,19 @@ static void main_window_load(Window *window) {
   //Create bitmap layer
   s_bitmap_bluetooth_ok = gbitmap_create_with_resource(RESOURCE_ID_BT_OK);
   s_bitmap_bluetooth_ko = gbitmap_create_with_resource(RESOURCE_ID_BT_KO);
-  s_bitmap_layer_bluetooth = bitmap_layer_create(GRect(75, 0, 20, 20));
+  s_bitmap_layer_bluetooth = bitmap_layer_create(GRect(75, 0, 24, 20));
   bitmap_layer_set_compositing_mode(s_bitmap_layer_bluetooth, GCompOpSet);
   
   layer_add_child(window_layer, bitmap_layer_get_layer(s_bitmap_layer_bluetooth));
    // Show current connection state
   bt_handler(connection_service_peek_pebble_app_connection());
+  
+  //battery charging
+  s_bitmap_charging = gbitmap_create_with_resource(RESOURCE_ID_IMG_CHARGING);
+  s_bitmap_layer_charging = bitmap_layer_create(GRect(109, 0, 15, 15));
+  bitmap_layer_set_compositing_mode(s_bitmap_layer_charging, GCompOpSet);
+  bitmap_layer_set_bitmap(s_bitmap_layer_charging, s_bitmap_charging); 
+  layer_add_child(window_layer, bitmap_layer_get_layer(s_bitmap_layer_charging));
   // Set the update_proc
   layer_set_update_proc(s_canvas_layer_battery, drawbattery);
   layer_set_update_proc(s_canvas_layer_calendar,drawcalendarstroke);
@@ -244,8 +269,10 @@ static void main_window_unload(Window *window) {
   layer_destroy(s_canvas_layer_calendar);
   
    bitmap_layer_destroy(s_bitmap_layer_bluetooth);
+   bitmap_layer_destroy(s_bitmap_layer_charging);
    gbitmap_destroy(s_bitmap_bluetooth_ok);
    gbitmap_destroy(s_bitmap_bluetooth_ko);
+   gbitmap_destroy(s_bitmap_charging);
 }
 
 //init for the program, creat window and get watch event
@@ -276,6 +303,7 @@ static void init(){
   battery_state_service_subscribe(battery_handler);
   BatteryChargeState bcs=battery_state_service_peek();
   calculateBatterySize(bcs.charge_percent);
+  showCharging(bcs.is_charging);
   
   //Register
   // Subscribe to Bluetooth updates
