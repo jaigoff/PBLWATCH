@@ -37,15 +37,15 @@ static void bt_handler(bool isConnected){
 //Draw calendar
 static void drawcalendarstroke (Layer *layer, GContext *ctx ){
   graphics_context_set_stroke_color(ctx,GColorBlack);
-  graphics_draw_line(ctx,GPoint(79,99+18),GPoint(79,168));
-  graphics_draw_line(ctx,GPoint(143,99+18),GPoint(143,168));
+  graphics_draw_line(ctx,GPoint(79,99+26),GPoint(79,168));
+  graphics_draw_line(ctx,GPoint(143,99+26),GPoint(143,168));
 }
 //Draw the battery status
 static void drawbattery(Layer *layer, GContext *ctx ){
   GRect bounds = layer_get_bounds(layer);
   //background
     graphics_context_set_fill_color(ctx,C_COLOR_BACKGROUNG_HOUR);
-  graphics_fill_rect(ctx, GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),0,65,10),0,GCornerNone );
+  graphics_fill_rect(ctx, GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),0,65,11),0,GCornerNone );
   //stroke battery
   graphics_context_set_stroke_color(ctx,C_COLOR_TEXT_HOUR);
   graphics_draw_rect(ctx, GRect(bounds.size.w-24,2,20,10) );
@@ -161,43 +161,43 @@ static void main_window_load(Window *window) {
   GRect bounds = layer_get_bounds(window_layer);
   APP_LOG(APP_LOG_LEVEL_INFO,"w %d h%d", bounds.size.w, bounds.size.h);
   //create TextLayer
-  s_textlayer_hour=text_layer_create(GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),5, 65 ,50 ));
+  s_textlayer_hour=text_layer_create(GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),11, 65 ,50 ));
   
   text_layer_set_background_color(s_textlayer_hour, C_COLOR_BACKGROUNG_HOUR);
   text_layer_set_text_color(s_textlayer_hour, C_COLOR_TEXT_HOUR);
-  text_layer_set_text(s_textlayer_hour, "HH");
+  text_layer_set_text(s_textlayer_hour, "");
   text_layer_set_font(s_textlayer_hour, fonts_get_system_font(FONT_KEY_ROBOTO_BOLD_SUBSET_49));
   text_layer_set_text_alignment(s_textlayer_hour, GTextAlignmentCenter);
   
   
   
-  s_textlayer_min=text_layer_create(GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),45, 65 , 54 ));
+  s_textlayer_min=text_layer_create(GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),53, 65 , 54 ));
   
   text_layer_set_background_color(s_textlayer_min, C_COLOR_BACKGROUNG_MIN);
   text_layer_set_text_color(s_textlayer_min, C_COLOR_TEXT_MIN);
-  text_layer_set_text(s_textlayer_min, "00");
+  text_layer_set_text(s_textlayer_min, "");
   text_layer_set_font(s_textlayer_min, fonts_get_system_font(FONT_KEY_ROBOTO_BOLD_SUBSET_49));
   text_layer_set_text_alignment(s_textlayer_min, GTextAlignmentCenter);
   
   
-  s_textlayer_month=text_layer_create(GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),99, 65 , 18 ));
+  s_textlayer_month=text_layer_create(GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),107, 65 , 18 ));
   text_layer_set_background_color(s_textlayer_month, GColorRed);
   text_layer_set_text_color(s_textlayer_month, GColorWhite);
-  text_layer_set_text(s_textlayer_month, "MM");
+  text_layer_set_text(s_textlayer_month, "");
   text_layer_set_font(s_textlayer_month, fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD));
   text_layer_set_text_alignment(s_textlayer_month, GTextAlignmentCenter);
   
-  s_textlayer_dayletter=text_layer_create(GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),99+18, 65 ,18 ));
+  s_textlayer_dayletter=text_layer_create(GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),99+26, 65 ,18 ));
   text_layer_set_background_color(s_textlayer_dayletter, GColorWhite);
   text_layer_set_text_color(s_textlayer_dayletter, GColorBlack);
-  text_layer_set_text(s_textlayer_dayletter, "Wednesday");
+  text_layer_set_text(s_textlayer_dayletter, "");
   text_layer_set_font(s_textlayer_dayletter, fonts_get_system_font(FONT_KEY_GOTHIC_14));
   text_layer_set_text_alignment(s_textlayer_dayletter, GTextAlignmentCenter);
   
-  s_textlayer_daynumber=text_layer_create(GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),99+18+18-5, 65 , 35 ));
+  s_textlayer_daynumber=text_layer_create(GRect(PBL_IF_ROUND_ELSE(bounds.size.w-59,bounds.size.w-65),99+18+26-7, 65 , 35 ));
   text_layer_set_background_color(s_textlayer_daynumber, GColorWhite);
   text_layer_set_text_color(s_textlayer_daynumber, GColorBlack);
-  text_layer_set_text(s_textlayer_daynumber, "31");
+  text_layer_set_text(s_textlayer_daynumber, "");
   text_layer_set_font(s_textlayer_daynumber, fonts_get_system_font(FONT_KEY_BITHAM_30_BLACK));
   text_layer_set_text_alignment(s_textlayer_daynumber, GTextAlignmentCenter);
   
