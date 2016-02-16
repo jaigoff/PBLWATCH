@@ -129,7 +129,7 @@ static void drawbattery(Layer *layer, GContext *ctx ){
   //Select color for battery
   if(ubatterycharge>=20&& ubatterycharge<41)
   {
-    batteryColor= GColorOrange;
+    batteryColor= GColorYellow;
   }
   else if(ubatterycharge<20)
   {
