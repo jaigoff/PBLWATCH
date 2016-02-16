@@ -7,6 +7,9 @@ static TextLayer *s_textlayer_min;
 static TextLayer *s_textlayer_month;
 static TextLayer *s_textlayer_daynumber;
 static TextLayer *s_textlayer_dayletter;
+static TextLayer *s_textlayer_steps;
+static TextLayer *s_textlayer_distance;
+static TextLayer *s_textlayer_sleep;
 static Layer *s_canvas_layer_battery;
 static Layer *s_canvas_layer_calendar;
 
@@ -23,6 +26,76 @@ GColor C_COLOR_TEXT_MIN;
 GColor C_COLOR_BACKGROUNG_HOUR;
 GColor C_COLOR_BACKGROUNG_MIN;
 const int16_t C_REC_BATTERY=17;
+
+
+
+
+
+//health
+static void health_showsteps(TextLayer *textlayer) {
+  time_t start = time_start_of_today();
+  time_t end = time(NULL);
+
+  // Check data is available
+  HealthServiceAccessibilityMask result = health_service_metric_accessible(HealthMetricStepCount, start, end);
+  if(result & HealthServiceAccessibilityMaskAvailable) {
+    // Data is available! Read it
+    HealthValue steps = health_service_sum(HealthMetricStepCount, start, end);
+        
+    
+    static char s_steps[1024];
+    snprintf(s_steps, sizeof(s_steps),"Steps: %d" , (int)steps);
+    text_layer_set_text(textlayer, s_steps);
+    APP_LOG(APP_LOG_LEVEL_INFO, "Steps: %d", (int)steps);
+    
+  }  
+  else {
+      APP_LOG(APP_LOG_LEVEL_ERROR, "No data available!");
+  }
+}
+
+static void health_showdistance(TextLayer *textlayer) {
+  time_t start = time_start_of_today();
+  time_t end = time(NULL);
+
+  // Check data is available
+  HealthServiceAccessibilityMask result = health_service_metric_accessible(HealthMetricWalkedDistanceMeters, start, end);
+  if(result & HealthServiceAccessibilityMaskAvailable) {
+    // Data is available! Read it
+    HealthValue distanceMeters = health_service_sum(HealthMetricWalkedDistanceMeters, start, end);
+    float distanceKm = (int)distanceMeters/1000;
+    
+    static char s_steps[1024];
+    snprintf(s_steps, sizeof(s_steps),"Dist: %d.%d km" , (int)distanceKm, (int)(distanceKm*100)%100 );
+    text_layer_set_text(textlayer, s_steps);
+    //APP_LOG(APP_LOG_LEVEL_INFO, "Distance: %d",distanceKm);
+    
+  }  
+  else {
+      APP_LOG(APP_LOG_LEVEL_ERROR, "No data available!");
+  }
+}
+
+
+static void health_handler(HealthEventType event, void *context) {
+  // Which type of event occured?
+  switch(event) {
+    case HealthEventSignificantUpdate:
+      APP_LOG(APP_LOG_LEVEL_INFO, 
+              "New HealthService HealthEventSignificantUpdate event");
+      break;
+    case HealthEventMovementUpdate:
+      APP_LOG(APP_LOG_LEVEL_INFO, 
+              "New HealthService HealthEventMovementUpdate event");
+      break;
+    case HealthEventSleepUpdate:
+      APP_LOG(APP_LOG_LEVEL_INFO, 
+              "New HealthService HealthEventSleepUpdate event");
+      break;
+  }
+}
+
+
 
 //Bluetooth
 static void bt_handler(bool isConnected){
@@ -154,6 +227,8 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   if(units_changed&HOUR_UNIT)
   {
     updateHour(tm_tick_time);
+    //update health
+    health_showsteps(s_textlayer_steps);
   }
   if(units_changed&MONTH_UNIT){
     updateMonth(tm_tick_time);
@@ -251,6 +326,25 @@ static void main_window_load(Window *window) {
   bitmap_layer_set_compositing_mode(s_bitmap_layer_charging, GCompOpSet);
   bitmap_layer_set_bitmap(s_bitmap_layer_charging, s_bitmap_charging); 
   layer_add_child(window_layer, bitmap_layer_get_layer(s_bitmap_layer_charging));
+  
+  //health part
+  #if defined(PBL_HEALTH)
+  s_textlayer_steps=text_layer_create(GRect(0,100, 70 ,20 ));
+  text_layer_set_background_color(s_textlayer_steps, GColorWhite);
+  text_layer_set_text_color(s_textlayer_steps, GColorBlack);
+  text_layer_set_text(s_textlayer_steps, "");
+  text_layer_set_font(s_textlayer_steps, fonts_get_system_font(FONT_KEY_GOTHIC_14));
+  text_layer_set_text_alignment(s_textlayer_steps, GTextAlignmentLeft);
+  
+  s_textlayer_distance=text_layer_create(GRect(0,115, 70 ,20 ));
+  text_layer_set_background_color(s_textlayer_distance, GColorWhite);
+  text_layer_set_text_color(s_textlayer_distance, GColorBlack);
+  text_layer_set_text(s_textlayer_distance, "");
+  text_layer_set_font(s_textlayer_distance, fonts_get_system_font(FONT_KEY_GOTHIC_14));
+  text_layer_set_text_alignment(s_textlayer_distance, GTextAlignmentLeft);
+  layer_add_child(window_layer, text_layer_get_layer(s_textlayer_steps));
+  layer_add_child(window_layer, text_layer_get_layer(s_textlayer_distance));
+  #endif
   // Set the update_proc
   layer_set_update_proc(s_canvas_layer_battery, drawbattery);
   layer_set_update_proc(s_canvas_layer_calendar,drawcalendarstroke);
@@ -264,6 +358,10 @@ static void main_window_unload(Window *window) {
   text_layer_destroy(s_textlayer_month);
   text_layer_destroy(s_textlayer_dayletter);
   text_layer_destroy(s_textlayer_daynumber);
+  #if defined(PBL_HEALTH)
+  text_layer_destroy(s_textlayer_steps);
+  text_layer_destroy(s_textlayer_distance);
+  #endif
     // Destroy Layer
   layer_destroy(s_canvas_layer_battery);
   layer_destroy(s_canvas_layer_calendar);
@@ -310,6 +408,18 @@ static void init(){
   connection_service_subscribe((ConnectionHandlers) {
     .pebble_app_connection_handler = bt_handler
   });
+  
+  //Health registration
+  #if defined(PBL_HEALTH)
+  health_showsteps(s_textlayer_steps);
+  health_showdistance(s_textlayer_distance);
+  // Attempt to subscribe 
+ // if(!health_service_events_subscribe(health_handler, NULL)) {
+   // APP_LOG(APP_LOG_LEVEL_ERROR, "Health not available!");
+  //}
+  #else
+  APP_LOG(APP_LOG_LEVEL_ERROR, "Health not available!");
+  #endif
 }
 
 //End watch face
