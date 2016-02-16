@@ -66,7 +66,7 @@ static void health_showdistance(TextLayer *textlayer) {
     float distanceKm = (int)distanceMeters/1000;
     
     static char s_steps[1024];
-    snprintf(s_steps, sizeof(s_steps),"Dist: %d.%d km" , (int)distanceKm, (int)(distanceKm*100)%100 );
+    snprintf(s_steps, sizeof(s_steps),"Dist: %d.%d km" , (int)distanceKm, (int)(distanceKm)%100 );
     text_layer_set_text(textlayer, s_steps);
     //APP_LOG(APP_LOG_LEVEL_INFO, "Distance: %d",distanceKm);
     
