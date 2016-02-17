@@ -32,6 +32,36 @@ const int16_t C_REC_BATTERY=17;
 
 
 //health
+
+static void health_showsleep(TextLayer *textlayer) {
+  time_t start = time_start_of_today();
+  time_t end = time(NULL);
+
+  // Check data is available
+  HealthServiceAccessibilityMask result = health_service_metric_accessible(HealthMetricStepCount, start, end);
+  if(result & HealthServiceAccessibilityMaskAvailable) {
+    // Data is available! Read it
+    HealthValue sleep = health_service_sum(HealthMetricSleepSeconds, start, end);
+        
+    int32_t hr;
+    int32_t min;
+    int32_t t;
+    hr = sleep/3600;
+    t   = sleep%3600;
+    min = t/60;
+   
+    static char s_sleep[1024];
+    snprintf(s_sleep, sizeof(s_sleep),"Sleep: %dH%02d" , (int)hr,(int)min) ;
+    text_layer_set_text(textlayer, s_sleep);
+    
+    
+   
+  }  
+  else {
+      APP_LOG(APP_LOG_LEVEL_ERROR, "No data available!");
+  }
+}
+
 static void health_showsteps(TextLayer *textlayer) {
   time_t start = time_start_of_today();
   time_t end = time(NULL);
@@ -48,6 +78,7 @@ static void health_showsteps(TextLayer *textlayer) {
     text_layer_set_text(textlayer, s_steps);
     APP_LOG(APP_LOG_LEVEL_INFO, "Steps: %d", (int)steps);
     
+   
   }  
   else {
       APP_LOG(APP_LOG_LEVEL_ERROR, "No data available!");
@@ -66,9 +97,13 @@ static void health_showdistance(TextLayer *textlayer) {
     float distanceKm = (int)distanceMeters/1000;
     
     static char s_steps[1024];
-    snprintf(s_steps, sizeof(s_steps),"Dist: %d.%d km" , (int)distanceKm, (int)(distanceKm)%100 );
+    snprintf(s_steps, sizeof(s_steps),"Dist: %d.%d km" , (int)distanceKm,  (int)((distanceKm-(int)distanceKm)*100)  );
     text_layer_set_text(textlayer, s_steps);
     //APP_LOG(APP_LOG_LEVEL_INFO, "Distance: %d",distanceKm);
+     //test 
+   /* float test=3.123;
+    float test2= test-(int)test;
+    APP_LOG(APP_LOG_LEVEL_INFO, "Test:%d.%d", (int)test,  (int) ((test2)*100 ));*/
     
   }  
   else {
@@ -83,14 +118,17 @@ static void health_handler(HealthEventType event, void *context) {
     case HealthEventSignificantUpdate:
       APP_LOG(APP_LOG_LEVEL_INFO, 
               "New HealthService HealthEventSignificantUpdate event");
+      health_showsteps(s_textlayer_steps);
+      health_showdistance(s_textlayer_distance);
+      health_showsleep(s_textlayer_sleep);
       break;
     case HealthEventMovementUpdate:
-      APP_LOG(APP_LOG_LEVEL_INFO, 
-              "New HealthService HealthEventMovementUpdate event");
+      /*APP_LOG(APP_LOG_LEVEL_INFO, 
+              "New HealthService HealthEventMovementUpdate event");*/
       break;
     case HealthEventSleepUpdate:
-      APP_LOG(APP_LOG_LEVEL_INFO, 
-              "New HealthService HealthEventSleepUpdate event");
+     /* APP_LOG(APP_LOG_LEVEL_INFO, 
+              "New HealthService HealthEventSleepUpdate event");*/
       break;
   }
 }
@@ -227,8 +265,12 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   if(units_changed&HOUR_UNIT)
   {
     updateHour(tm_tick_time);
+    #if defined(PBL_HEALTH)
     //update health
     health_showsteps(s_textlayer_steps);
+    health_showdistance(s_textlayer_distance);
+     health_showsleep(s_textlayer_sleep);
+    #endif
   }
   if(units_changed&MONTH_UNIT){
     updateMonth(tm_tick_time);
@@ -342,8 +384,18 @@ static void main_window_load(Window *window) {
   text_layer_set_text(s_textlayer_distance, "");
   text_layer_set_font(s_textlayer_distance, fonts_get_system_font(FONT_KEY_GOTHIC_14));
   text_layer_set_text_alignment(s_textlayer_distance, GTextAlignmentLeft);
+  
+  s_textlayer_sleep=text_layer_create(GRect(0,130, 70 ,20 ));
+  text_layer_set_background_color(s_textlayer_sleep, GColorWhite);
+  text_layer_set_text_color(s_textlayer_sleep, GColorBlack);
+  text_layer_set_text(s_textlayer_sleep, "");
+  text_layer_set_font(s_textlayer_sleep, fonts_get_system_font(FONT_KEY_GOTHIC_14));
+  text_layer_set_text_alignment(s_textlayer_sleep, GTextAlignmentLeft);
+  
+  
   layer_add_child(window_layer, text_layer_get_layer(s_textlayer_steps));
   layer_add_child(window_layer, text_layer_get_layer(s_textlayer_distance));
+  layer_add_child(window_layer, text_layer_get_layer(s_textlayer_sleep));
   #endif
   // Set the update_proc
   layer_set_update_proc(s_canvas_layer_battery, drawbattery);
@@ -361,6 +413,7 @@ static void main_window_unload(Window *window) {
   #if defined(PBL_HEALTH)
   text_layer_destroy(s_textlayer_steps);
   text_layer_destroy(s_textlayer_distance);
+  text_layer_destroy(s_textlayer_sleep);
   #endif
     // Destroy Layer
   layer_destroy(s_canvas_layer_battery);
@@ -413,10 +466,11 @@ static void init(){
   #if defined(PBL_HEALTH)
   health_showsteps(s_textlayer_steps);
   health_showdistance(s_textlayer_distance);
+  health_showsleep(s_textlayer_sleep);
   // Attempt to subscribe 
- // if(!health_service_events_subscribe(health_handler, NULL)) {
-   // APP_LOG(APP_LOG_LEVEL_ERROR, "Health not available!");
-  //}
+  if(!health_service_events_subscribe(health_handler, NULL)) {
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Health not available!");
+  }
   #else
   APP_LOG(APP_LOG_LEVEL_ERROR, "Health not available!");
   #endif
