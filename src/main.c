@@ -1,5 +1,6 @@
 #include <pebble.h>
 #include "main.h"
+#include "utils.h"
 
 static Window *s_window;
 static TextLayer *s_textlayer_hour;
@@ -44,16 +45,24 @@ static void health_showdeepsleep(TextLayer *textlayer) {
     // Data is available! Read it
     HealthValue sleep = health_service_sum(HealthMetricSleepRestfulSeconds, start, end);
         
-    int hr;
-    int min;
-    int t;
+   
+    /*static char s_sleep[512];
+    static char s_sleep2[512];
+    sleeptimetochar(s_sleep,sleep);
+    snprintf(s_sleep2, sizeof(s_sleep2),"D Sleep: %s" , s_sleep) ;
+     text_layer_set_text(textlayer, s_sleep2); */
+    
+     double hr;
+    double min;
+    double t;
     hr = sleep/3600;
     t   = sleep%3600;
     min = t/60;
    
     static char s_sleep[1024];
-    snprintf(s_sleep, sizeof(s_sleep),"D sleep: %dH%02d" , (int)hr,(int)min) ;
-    text_layer_set_text(textlayer, s_sleep); 
+    snprintf(s_sleep, sizeof(s_sleep),"D Sleep: %dH%02d" , (int)hr,(int)min) ;
+    text_layer_set_text(textlayer, s_sleep);
+   
   }  
   else {
       APP_LOG(APP_LOG_LEVEL_ERROR, "No data available!");
@@ -71,9 +80,9 @@ static void health_showsleep(TextLayer *textlayer) {
     // Data is available! Read it
     HealthValue sleep = health_service_sum(HealthMetricSleepSeconds, start, end);
         
-    int hr;
-    int min;
-    int t;
+    double hr;
+    double min;
+    double t;
     hr = sleep/3600;
     t   = sleep%3600;
     min = t/60;
@@ -119,17 +128,14 @@ static void health_showdistance(TextLayer *textlayer) {
   if(result & HealthServiceAccessibilityMaskAvailable) {
     // Data is available! Read it
     HealthValue distanceMeters = health_service_sum(HealthMetricWalkedDistanceMeters, start, end);
-    float distanceKm = ((float)distanceMeters)/1000.0;
+    double distanceKm = ((double)distanceMeters)/1000.0;
     
-    static char s_steps[1024];
-    snprintf(s_steps, sizeof(s_steps),"Dist: %d.%d km" , (int)distanceKm,  (int)((distanceKm-(int)distanceKm)*100)  );
-    text_layer_set_text(textlayer, s_steps);
-    //APP_LOG(APP_LOG_LEVEL_INFO, "Distance: %d",distanceKm);
-     //test 
-  /* float test=3.123;
-    float test2= test-(int)test;
-    APP_LOG(APP_LOG_LEVEL_INFO, "Test:%d.%d", (int)test,  (int) ((test2)*100 ));*/
-    
+    static char s_steps[256];
+    static char s_steps2[256];
+    //snprintf(s_steps, sizeof(s_steps),"Dist: %d.%02d km" , (int)distanceKm,  (int)((distanceKm-(int)distanceKm)*100)  );
+    ftoa(s_steps,distanceKm,2);
+    snprintf(s_steps2, sizeof(s_steps2),"Dist.:%s km",s_steps);
+    text_layer_set_text(textlayer, s_steps2);
   }  
   else {
       APP_LOG(APP_LOG_LEVEL_ERROR, "No data available!");
